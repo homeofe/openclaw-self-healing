@@ -112,9 +112,49 @@
       "github_issue": 4,
       "github_repo": "elvatis/openclaw-self-healing-homeofe",
       "completed": "2026-02-28T16:15:24.131Z"
+    },
+    "T-011": {
+      "title": "Add integration tests for monitor service tick flows",
+      "status": "ready",
+      "priority": "high",
+      "depends_on": [],
+      "created": "2026-03-02T00:00:00Z",
+      "notes": "## Summary\n\nThe current test suite has 122 unit tests covering helpers and pure functions (parseConfig, pickFallback, buildStatusSnapshot, etc.) but the monitor service tick() function runs all healing logic and is not covered by integration tests.\n\n## Scope\n\n- Add integration tests for the full monitor tick cycle using a mocked api object\n- Cover: WhatsApp disconnect streak -> restart path\n- Cover: cron failure accumulation -> disable + issue create path\n- Cover: active model recovery probe -> cooldown removal path\n- Cover: config hot-reload during tick\n- Cover: dry-run flag suppresses all side-effects\n- Use Jest timer mocks for setInterval control\n\n## Acceptance criteria\n\n- At least 20 new integration-level tests added\n- All healing paths (WhatsApp, cron, probe) exercised in tests\n- Tests pass with npm test",
+      "github_issue": 9,
+      "github_repo": "elvatis/openclaw-self-healing-homeofe"
+    },
+    "T-012": {
+      "title": "Add startup configuration validation with fail-fast behavior",
+      "status": "ready",
+      "priority": "high",
+      "depends_on": [],
+      "created": "2026-03-02T00:00:00Z",
+      "notes": "## Summary\n\nCurrently parseConfig() silently falls back to defaults for any invalid value. The plugin starts even if modelOrder is empty, paths are not writable, or cooldownMinutes is set to an absurd value. This makes misconfiguration hard to diagnose.\n\n## Scope\n\n- Add a validateConfig(config: PluginConfig): { valid: boolean; errors: string[] } function\n- Validate: modelOrder has at least one entry\n- Validate: cooldownMinutes is between 1 and 10080 (1 week)\n- Validate: probeIntervalSec >= 60\n- Validate: whatsappMinRestartIntervalSec >= 60\n- Validate: state file directory is writable (best-effort)\n- Log each validation error clearly with api.logger?.error\n- Return early from register() if validation fails (fail-fast)\n\n## Acceptance criteria\n\n- validateConfig function is exported and unit-tested\n- Plugin refuses to start on invalid config and logs all reasons\n- README config section updated with valid ranges",
+      "github_issue": 10,
+      "github_repo": "elvatis/openclaw-self-healing-homeofe"
+    },
+    "T-013": {
+      "title": "Write status snapshot file on each monitor tick",
+      "status": "ready",
+      "priority": "medium",
+      "depends_on": [],
+      "created": "2026-03-02T00:00:00Z",
+      "notes": "## Summary\n\nThe plugin already builds a StatusSnapshot object and emits it via api.emit('self-heal:status', snapshot) on each tick. However, external tools (scripts, dashboards, other plugins) cannot read this snapshot without subscribing to the event bus. A file-based status report would allow polling from any tool.\n\n## Scope\n\n- After each tick, write buildStatusSnapshot(state, config) to a JSON file\n- Default path: ~/.openclaw/workspace/memory/self-heal-status.json (configurable via statusFile config key)\n- Write atomically (write to .tmp then rename)\n- Add statusFile to PluginConfig type and parseConfig\n- Add a writeStatusFile(path, snapshot) helper function (exported for tests)\n\n## Acceptance criteria\n\n- Status file is written on every tick\n- File contains valid JSON matching StatusSnapshot type\n- Atomic write prevents partial reads\n- Tests cover writeStatusFile helper\n- README documents the statusFile config key and file format",
+      "github_issue": 11,
+      "github_repo": "elvatis/openclaw-self-healing-homeofe"
+    },
+    "T-014": {
+      "title": "Export heal metrics to ~/.aahp/metrics.jsonl",
+      "status": "ready",
+      "priority": "medium",
+      "depends_on": [],
+      "created": "2026-03-02T00:00:00Z",
+      "notes": "## Summary\n\nHeal events are currently only visible in logs and via api.emit(). There is no persistent record of past heal actions for analysis or alerting. The aahp-runner project writes structured metrics to ~/.aahp/metrics.jsonl; the self-heal plugin should do the same.\n\n## Scope\n\n- Add an appendMetric(line: object, metricsFile: string) helper that appends a JSON line\n- Emit one JSONL line per heal event:\n  - { ts, plugin: \"self-heal\", event: \"model-cooldown\", model, reason, cooldownSec }\n  - { ts, plugin: \"self-heal\", event: \"session-patched\", sessionKey, oldModel, newModel }\n  - { ts, plugin: \"self-heal\", event: \"whatsapp-restart\", disconnectStreak }\n  - { ts, plugin: \"self-heal\", event: \"cron-disabled\", cronId, cronName, consecutiveFailures }\n  - { ts, plugin: \"self-heal\", event: \"model-recovered\", model, isPreferred }\n- Default metrics file: ~/.aahp/metrics.jsonl (configurable via metricsFile config key)\n- Skip metrics write in dry-run mode (or mark with dryRun: true)\n- Create parent directory if missing\n\n## Acceptance criteria\n\n- appendMetric helper is exported and unit-tested\n- All 5 heal event types write a metrics line\n- Dry-run events are either skipped or marked\n- README documents the metrics format and metricsFile config key",
+      "github_issue": 12,
+      "github_repo": "elvatis/openclaw-self-healing-homeofe"
     }
   },
-  "quick_context": "T-004 done: full TypeScript build pipeline with tsconfig.check.json for test type-checking, CI script (typecheck+build+test). 122 tests pass, zero type errors. T-005 still blocked on openclaw plugins list --json API.",
+  "quick_context": "T-004 done: full TypeScript build pipeline with tsconfig.check.json for test type-checking, CI script (typecheck+build+test). 122 tests pass, zero type errors. T-005 still blocked on openclaw plugins list --json API. v0.3 roadmap defined: T-011 (integration tests), T-012 (config validation), T-013 (status file), T-014 (metrics export).",
   "aahp_version": "3.0",
   "project": "openclaw-self-healing-homeofe",
   "token_budget": {
@@ -130,5 +170,5 @@
     "duration_minutes": 2,
     "session_id": "t004-typescript-build-pipeline"
   },
-  "next_task_id": 11
+  "next_task_id": 15
 }
