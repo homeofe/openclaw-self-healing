@@ -1,5 +1,5 @@
 {
-  "id": "openclaw-self-healing",
+  "id": "openclaw-self-healing-elvatis",
   "name": "OpenClaw Self Healing",
   "version": "0.2.5",
   "description": "Self-healing health checks + guardrails + auto-fix for reversible failures (rate limits, auth errors, stuck session pins).",
@@ -95,7 +95,7 @@
           },
           "issueRepo": {
             "type": "string",
-            "default": "elvatis/openclaw-self-healing-homeofe",
+            "default": "elvatis/openclaw-self-healing-elvatis",
             "description": "GitHub repository (owner/repo) where auto-created cron failure issues should be opened."
           },
           "pluginDisableCooldownSec": {
