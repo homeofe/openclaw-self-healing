@@ -133,17 +133,18 @@
       "notes": "## Summary\n\nCurrently parseConfig() silently falls back to defaults for any invalid value. The plugin starts even if modelOrder is empty, paths are not writable, or cooldownMinutes is set to an absurd value. This makes misconfiguration hard to diagnose.\n\n## Scope\n\n- Add a validateConfig(config: PluginConfig): { valid: boolean; errors: string[] } function\n- Validate: modelOrder has at least one entry\n- Validate: cooldownMinutes is between 1 and 10080 (1 week)\n- Validate: probeIntervalSec >= 60\n- Validate: whatsappMinRestartIntervalSec >= 60\n- Validate: state file directory is writable (best-effort)\n- Log each validation error clearly with api.logger?.error\n- Return early from register() if validation fails (fail-fast)\n\n## Acceptance criteria\n\n- validateConfig function is exported and unit-tested\n- Plugin refuses to start on invalid config and logs all reasons\n- README config section updated with valid ranges",
       "github_issue": 10,
       "github_repo": "elvatis/openclaw-self-healing-homeofe",
-      "completed": "2026-03-02T03:50:00.000Z"
+      "completed": "2026-03-02T02:50:50.546Z"
     },
     "T-013": {
       "title": "Write status snapshot file on each monitor tick",
-      "status": "ready",
+      "status": "done",
       "priority": "medium",
       "depends_on": [],
       "created": "2026-03-02T00:00:00Z",
       "notes": "## Summary\n\nThe plugin already builds a StatusSnapshot object and emits it via api.emit('self-heal:status', snapshot) on each tick. However, external tools (scripts, dashboards, other plugins) cannot read this snapshot without subscribing to the event bus. A file-based status report would allow polling from any tool.\n\n## Scope\n\n- After each tick, write buildStatusSnapshot(state, config) to a JSON file\n- Default path: ~/.openclaw/workspace/memory/self-heal-status.json (configurable via statusFile config key)\n- Write atomically (write to .tmp then rename)\n- Add statusFile to PluginConfig type and parseConfig\n- Add a writeStatusFile(path, snapshot) helper function (exported for tests)\n\n## Acceptance criteria\n\n- Status file is written on every tick\n- File contains valid JSON matching StatusSnapshot type\n- Atomic write prevents partial reads\n- Tests cover writeStatusFile helper\n- README documents the statusFile config key and file format",
       "github_issue": 11,
-      "github_repo": "elvatis/openclaw-self-healing-homeofe"
+      "github_repo": "elvatis/openclaw-self-healing-homeofe",
+      "completed": "2026-03-02T04:15:00.000Z"
     },
     "T-014": {
       "title": "Export heal metrics to ~/.aahp/metrics.jsonl",
@@ -156,7 +157,7 @@
       "github_repo": "elvatis/openclaw-self-healing-homeofe"
     }
   },
-  "quick_context": "T-012 done: validateConfig() with fail-fast behavior added to index.ts. 5 validations (modelOrder, cooldownMinutes, probeIntervalSec, whatsappMinRestartIntervalSec, stateFile writable). 18 new tests, total 172 passing. CI green. T-005 still blocked on openclaw plugins list --json API. Remaining v0.3 tasks: T-013 (status file), T-014 (metrics export).",
+  "quick_context": "T-013 done: writeStatusFile() helper with atomic write (tmp+rename) added. statusFile config key with default ~/.openclaw/workspace/memory/self-heal-status.json. Written on every monitor tick. 9 new tests, total 181 passing. CI green. T-005 still blocked on openclaw plugins list --json API. Remaining v0.3 task: T-014 (metrics export).",
   "aahp_version": "3.0",
   "project": "openclaw-self-healing-homeofe",
   "token_budget": {
@@ -165,12 +166,12 @@
     "manifest_plus_core": 300
   },
   "last_session": {
-    "timestamp": "2026-03-02T03:50:00.000Z",
+    "timestamp": "2026-03-02T04:15:00.000Z",
     "phase": "execution",
     "agent": "claude-code",
-    "commit": "cd06b4b",
-    "duration_minutes": 5,
-    "session_id": "t012-config-validation"
+    "commit": "4a9d7a5",
+    "duration_minutes": 3,
+    "session_id": "t013-status-file"
   },
   "next_task_id": 15
 }
