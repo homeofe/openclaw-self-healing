@@ -55,7 +55,7 @@
       "status": "blocked",
       "depends_on": [],
       "blocked_reason": "Waiting for openclaw plugins list --json API",
-      "github_repo": "elvatis/openclaw-self-healing-homeofe",
+      "github_repo": "elvatis/openclaw-self-healing-elvatis",
       "github_issue": 3
     },
     "T-006": {
@@ -66,7 +66,7 @@
       "created": "2026-02-28T13:25:43.201Z",
       "notes": "## Summary\n\nPlugin config (`modelOrder`, `cooldownMinutes`, `autoFix.*`) is read once at startup via `api.pluginConfig`. Changing any config value requires a full gateway restart.\n\n## Scope\n\n- Watch for config changes (file watch or periodic re-read)\n- Re-read plugin config on change and update internal variables\n- Handle edge cases: invalid new config (keep old), partial updates\n- Alternatively, support a reload command: `openclaw self-heal reload`\n\n## Acceptance criteria\n\n- Config changes take",
       "github_issue": 8,
-      "github_repo": "elvatis/openclaw-self-healing-homeofe",
+      "github_repo": "elvatis/openclaw-self-healing-elvatis",
       "completed": "2026-02-28T13:42:34.823Z"
     },
     "T-007": {
@@ -77,7 +77,7 @@
       "created": "2026-02-28T13:25:43.204Z",
       "notes": "## Summary\n\nModels in cooldown are currently recovered passively: `pickFallback()` checks `nextAvailableAt` only when a new failure occurs. If a model recovers early, the plugin still uses the fallback until the full cooldown expires.\n\n## Scope\n\n- Add a periodic probe (e.g., every 5 minutes) that tests cooldown models\n- Use a lightweight API call (e.g., model info endpoint or small completion)\n- If the model responds successfully, remove it from cooldown early\n- Configurable probe interval and e",
       "github_issue": 7,
-      "github_repo": "elvatis/openclaw-self-healing-homeofe",
+      "github_repo": "elvatis/openclaw-self-healing-elvatis",
       "completed": "2026-02-28T14:42:14.373Z"
     },
     "T-008": {
@@ -88,7 +88,7 @@
       "created": "2026-02-28T13:25:43.204Z",
       "notes": "## Summary\n\nThere is no way to test what the plugin would do without it actually taking healing actions (restarting gateways, disabling crons, patching sessions). A dry-run mode is needed for validation and debugging.\n\n## Scope\n\n- Add a `dryRun: boolean` config option (default: false)\n- When enabled: log all actions that _would_ be taken, but do not execute them\n- State tracking still updates (to test state transitions) but side-effects are skipped\n- Useful for: initial setup validation, debuggi",
       "github_issue": 6,
-      "github_repo": "elvatis/openclaw-self-healing-homeofe",
+      "github_repo": "elvatis/openclaw-self-healing-elvatis",
       "completed": "2026-02-28T15:14:21.885Z"
     },
     "T-009": {
@@ -99,7 +99,7 @@
       "created": "2026-02-28T13:25:43.204Z",
       "notes": "## Summary\n\nThe plugin uses `api.logger` for logging but emits no structured events. Monitoring and alerting systems cannot track heal actions, cooldown entries, or failure rates.\n\n## Scope\n\n- Emit structured events via `api.emit()` or equivalent for:\n  - `self-heal:model-cooldown` - model put into cooldown (with model ID, reason, duration)\n  - `self-heal:session-patched` - session model pin overridden (with session key, old/new model)\n  - `self-heal:whatsapp-restart` - WhatsApp gateway restarte",
       "github_issue": 5,
-      "github_repo": "elvatis/openclaw-self-healing-homeofe",
+      "github_repo": "elvatis/openclaw-self-healing-elvatis",
       "completed": "2026-02-28T15:23:54.846Z"
     },
     "T-010": {
@@ -110,7 +110,7 @@
       "created": "2026-02-28T13:25:43.204Z",
       "notes": "## Summary\n\nExternal tools (dashboards, other plugins, CLI) cannot query the self-heal plugin state. There is no way to know which models are in cooldown, how many heals have occurred, or the current WhatsApp connection status without reading the raw state file.\n\n## Scope\n\n- Register a plugin command or API endpoint (depends on openclaw plugin API):\n  - `openclaw self-heal status` or similar\n  - Returns JSON with: cooldown models, WhatsApp status, cron heal history, last heal actions\n- Alternati",
       "github_issue": 4,
-      "github_repo": "elvatis/openclaw-self-healing-homeofe",
+      "github_repo": "elvatis/openclaw-self-healing-elvatis",
       "completed": "2026-02-28T16:15:24.131Z"
     },
     "T-011": {
@@ -121,7 +121,7 @@
       "created": "2026-03-02T00:00:00Z",
       "notes": "## Summary\n\nThe current test suite has 122 unit tests covering helpers and pure functions (parseConfig, pickFallback, buildStatusSnapshot, etc.) but the monitor service tick() function runs all healing logic and is not covered by integration tests.\n\n## Scope\n\n- Add integration tests for the full monitor tick cycle using a mocked api object\n- Cover: WhatsApp disconnect streak -> restart path\n- Cover: cron failure accumulation -> disable + issue create path\n- Cover: active model recovery probe -> cooldown removal path\n- Cover: config hot-reload during tick\n- Cover: dry-run flag suppresses all side-effects\n- Use Jest timer mocks for setInterval control\n\n## Acceptance criteria\n\n- At least 20 new integration-level tests added\n- All healing paths (WhatsApp, cron, probe) exercised in tests\n- Tests pass with npm test",
       "github_issue": 9,
-      "github_repo": "elvatis/openclaw-self-healing-homeofe",
+      "github_repo": "elvatis/openclaw-self-healing-elvatis",
       "completed": "2026-03-02T02:17:03.808Z"
     },
     "T-012": {
@@ -132,7 +132,7 @@
       "created": "2026-03-02T00:00:00Z",
       "notes": "## Summary\n\nCurrently parseConfig() silently falls back to defaults for any invalid value. The plugin starts even if modelOrder is empty, paths are not writable, or cooldownMinutes is set to an absurd value. This makes misconfiguration hard to diagnose.\n\n## Scope\n\n- Add a validateConfig(config: PluginConfig): { valid: boolean; errors: string[] } function\n- Validate: modelOrder has at least one entry\n- Validate: cooldownMinutes is between 1 and 10080 (1 week)\n- Validate: probeIntervalSec >= 60\n- Validate: whatsappMinRestartIntervalSec >= 60\n- Validate: state file directory is writable (best-effort)\n- Log each validation error clearly with api.logger?.error\n- Return early from register() if validation fails (fail-fast)\n\n## Acceptance criteria\n\n- validateConfig function is exported and unit-tested\n- Plugin refuses to start on invalid config and logs all reasons\n- README config section updated with valid ranges",
       "github_issue": 10,
-      "github_repo": "elvatis/openclaw-self-healing-homeofe",
+      "github_repo": "elvatis/openclaw-self-healing-elvatis",
       "completed": "2026-03-02T02:50:50.546Z"
     },
     "T-013": {
@@ -143,7 +143,7 @@
       "created": "2026-03-02T00:00:00Z",
       "notes": "## Summary\n\nThe plugin already builds a StatusSnapshot object and emits it via api.emit('self-heal:status', snapshot) on each tick. However, external tools (scripts, dashboards, other plugins) cannot read this snapshot without subscribing to the event bus. A file-based status report would allow polling from any tool.\n\n## Scope\n\n- After each tick, write buildStatusSnapshot(state, config) to a JSON file\n- Default path: ~/.openclaw/workspace/memory/self-heal-status.json (configurable via statusFile config key)\n- Write atomically (write to .tmp then rename)\n- Add statusFile to PluginConfig type and parseConfig\n- Add a writeStatusFile(path, snapshot) helper function (exported for tests)\n\n## Acceptance criteria\n\n- Status file is written on every tick\n- File contains valid JSON matching StatusSnapshot type\n- Atomic write prevents partial reads\n- Tests cover writeStatusFile helper\n- README documents the statusFile config key and file format",
       "github_issue": 11,
-      "github_repo": "elvatis/openclaw-self-healing-homeofe",
+      "github_repo": "elvatis/openclaw-self-healing-elvatis",
       "completed": "2026-03-02T03:16:30.819Z"
     },
     "T-014": {
@@ -154,12 +154,12 @@
       "created": "2026-03-02T00:00:00Z",
       "notes": "## Summary\n\nHeal events are currently only visible in logs and via api.emit(). There is no persistent record of past heal actions for analysis or alerting. The aahp-runner project writes structured metrics to ~/.aahp/metrics.jsonl; the self-heal plugin should do the same.\n\n## Scope\n\n- Add an appendMetric(line: object, metricsFile: string) helper that appends a JSON line\n- Emit one JSONL line per heal event:\n  - { ts, plugin: \"self-heal\", event: \"model-cooldown\", model, reason, cooldownSec }\n  - { ts, plugin: \"self-heal\", event: \"session-patched\", sessionKey, oldModel, newModel }\n  - { ts, plugin: \"self-heal\", event: \"whatsapp-restart\", disconnectStreak }\n  - { ts, plugin: \"self-heal\", event: \"cron-disabled\", cronId, cronName, consecutiveFailures }\n  - { ts, plugin: \"self-heal\", event: \"model-recovered\", model, isPreferred }\n- Default metrics file: ~/.aahp/metrics.jsonl (configurable via metricsFile config key)\n- Skip metrics write in dry-run mode (or mark with dryRun: true)\n- Create parent directory if missing\n\n## Acceptance criteria\n\n- appendMetric helper is exported and unit-tested\n- All 5 heal event types write a metrics line\n- Dry-run events are either skipped or marked\n- README documents the metrics format and metricsFile config key",
       "github_issue": 12,
-      "github_repo": "elvatis/openclaw-self-healing-homeofe"
+      "github_repo": "elvatis/openclaw-self-healing-elvatis"
     }
   },
   "quick_context": "T-013 done: writeStatusFile() helper with atomic write (tmp+rename) added. statusFile config key with default ~/.openclaw/workspace/memory/self-heal-status.json. Written on every monitor tick. 9 new tests, total 181 passing. CI green. T-005 still blocked on openclaw plugins list --json API. Remaining v0.3 task: T-014 (metrics export).",
   "aahp_version": "3.0",
-  "project": "openclaw-self-healing-homeofe",
+  "project": "openclaw-self-healing-elvatis",
   "token_budget": {
     "full_read": 1000,
     "manifest_only": 100,

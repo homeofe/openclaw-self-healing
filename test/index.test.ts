@@ -1963,7 +1963,7 @@ describe("parseConfig", () => {
     expect(c.whatsappMinRestartIntervalSec).toBe(300);
     expect(c.cronFailThreshold).toBe(3);
     expect(c.issueCooldownSec).toBe(6 * 3600);
-    expect(c.issueRepo).toBe("elvatis/openclaw-self-healing-homeofe");
+    expect(c.issueRepo).toBe("elvatis/openclaw-self-healing-elvatis");
     expect(c.pluginDisableCooldownSec).toBe(3600);
     expect(c.probeEnabled).toBe(true);
     expect(c.probeIntervalSec).toBe(300);
@@ -2006,7 +2006,7 @@ describe("parseConfig", () => {
 
   it("falls back to default when configured issueRepo is invalid", () => {
     const c = parseConfig({ autoFix: { issueRepo: "not-a-slug" } });
-    expect(c.issueRepo).toBe("elvatis/openclaw-self-healing-homeofe");
+    expect(c.issueRepo).toBe("elvatis/openclaw-self-healing-elvatis");
   });
 
   it("does not share modelOrder array reference with input", () => {
@@ -2047,7 +2047,7 @@ describe("parseConfig", () => {
 
 describe("GitHub issue helpers", () => {
   it("validates owner/repo slug", () => {
-    expect(isValidIssueRepoSlug("elvatis/openclaw-self-healing-homeofe")).toBe(true);
+    expect(isValidIssueRepoSlug("elvatis/openclaw-self-healing-elvatis")).toBe(true);
     expect(isValidIssueRepoSlug("owner/repo_1")).toBe(true);
     expect(isValidIssueRepoSlug("bad")).toBe(false);
     expect(isValidIssueRepoSlug("owner/repo/extra")).toBe(false);
@@ -2056,7 +2056,7 @@ describe("GitHub issue helpers", () => {
   it("resolves issue repo from config then env then default", () => {
     expect(resolveIssueRepo("owner/config-repo", "owner/env-repo")).toBe("owner/config-repo");
     expect(resolveIssueRepo("bad", "owner/env-repo")).toBe("owner/env-repo");
-    expect(resolveIssueRepo(undefined, "bad")).toBe("elvatis/openclaw-self-healing-homeofe");
+    expect(resolveIssueRepo(undefined, "bad")).toBe("elvatis/openclaw-self-healing-elvatis");
   });
 
   it("builds shell-safe gh issue command with labels", () => {
@@ -2354,7 +2354,7 @@ describe("validateConfig", () => {
       whatsappMinRestartIntervalSec: 300,
       cronFailThreshold: 3,
       issueCooldownSec: 21600,
-      issueRepo: "elvatis/openclaw-self-healing-homeofe",
+      issueRepo: "elvatis/openclaw-self-healing-elvatis",
       pluginDisableCooldownSec: 3600,
       probeEnabled: true,
       probeIntervalSec: 300,

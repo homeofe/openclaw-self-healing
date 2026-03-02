@@ -158,7 +158,7 @@ export function isValidIssueRepoSlug(value: string): boolean {
 }
 
 export function resolveIssueRepo(configValue: unknown, envValue: unknown): string {
-  const defaultRepo = "elvatis/openclaw-self-healing-homeofe";
+  const defaultRepo = "elvatis/openclaw-self-healing-elvatis";
   const candidates = [configValue, envValue, defaultRepo];
   for (const candidate of candidates) {
     if (typeof candidate !== "string") continue;
