@@ -115,11 +115,12 @@
     },
     "T-011": {
       "title": "Add integration tests for monitor service tick flows",
-      "status": "ready",
+      "status": "done",
       "priority": "high",
       "depends_on": [],
       "created": "2026-03-02T00:00:00Z",
-      "notes": "## Summary\n\nThe current test suite has 122 unit tests covering helpers and pure functions (parseConfig, pickFallback, buildStatusSnapshot, etc.) but the monitor service tick() function runs all healing logic and is not covered by integration tests.\n\n## Scope\n\n- Add integration tests for the full monitor tick cycle using a mocked api object\n- Cover: WhatsApp disconnect streak -> restart path\n- Cover: cron failure accumulation -> disable + issue create path\n- Cover: active model recovery probe -> cooldown removal path\n- Cover: config hot-reload during tick\n- Cover: dry-run flag suppresses all side-effects\n- Use Jest timer mocks for setInterval control\n\n## Acceptance criteria\n\n- At least 20 new integration-level tests added\n- All healing paths (WhatsApp, cron, probe) exercised in tests\n- Tests pass with npm test",
+      "completed": "2026-03-02T03:15:00.000Z",
+      "notes": "32 integration tests added covering all healing paths: WhatsApp disconnect->restart (6), cron failure->disable+issue (6), probe->cooldown removal (3), config hot-reload (3), dry-run suppression (3), status snapshot (4), multi-domain tick (2), edge cases (5). Total: 154 tests, all passing.",
       "github_issue": 9,
       "github_repo": "elvatis/openclaw-self-healing-homeofe"
     },
@@ -154,7 +155,7 @@
       "github_repo": "elvatis/openclaw-self-healing-homeofe"
     }
   },
-  "quick_context": "T-004 done: full TypeScript build pipeline with tsconfig.check.json for test type-checking, CI script (typecheck+build+test). 122 tests pass, zero type errors. T-005 still blocked on openclaw plugins list --json API. v0.3 roadmap defined: T-011 (integration tests), T-012 (config validation), T-013 (status file), T-014 (metrics export).",
+  "quick_context": "T-011 done: 32 integration tests for monitor tick flows added (test/monitor-integration.test.ts). Total 154 tests, all passing. CI pipeline (typecheck+build+test) green. T-005 still blocked on openclaw plugins list --json API. Remaining v0.3 tasks: T-012 (config validation), T-013 (status file), T-014 (metrics export).",
   "aahp_version": "3.0",
   "project": "openclaw-self-healing-homeofe",
   "token_budget": {
@@ -163,12 +164,12 @@
     "manifest_plus_core": 300
   },
   "last_session": {
-    "timestamp": "2026-03-01T15:01:03.900Z",
+    "timestamp": "2026-03-02T03:15:00.000Z",
     "phase": "execution",
     "agent": "claude-code",
-    "commit": "b3e85e8",
-    "duration_minutes": 2,
-    "session_id": "t004-typescript-build-pipeline"
+    "commit": "4b30e7b",
+    "duration_minutes": 10,
+    "session_id": "t011-integration-tests"
   },
   "next_task_id": 15
 }

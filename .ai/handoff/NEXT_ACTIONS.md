@@ -4,40 +4,54 @@
 
 | Status  | Count |
 |---------|-------|
-| Done    | 10    |
-| Ready   | 4     |
+| Done    | 11    |
+| Ready   | 3     |
 | Blocked | 1     |
 
 ---
 
 ## Ready - Work These Next
 
-### T-011 [high] - Add integration tests for monitor service tick flows
-- **Goal:** Cover the full monitor tick cycle with integration-level tests using a mocked api object.
-- **Scope:** WhatsApp restart path, cron disable + issue create path, model recovery probe path, config hot-reload, dry-run suppression. Use Jest timer mocks.
-- **Definition of done:** At least 20 new integration tests added; all healing paths exercised; `npm test` passes.
-- **Files:** `test/index.test.ts`, `index.ts`
-- **GitHub Issue:** #9
-
 ### T-012 [high] - Add startup configuration validation with fail-fast behavior
 - **Goal:** Validate config on startup and refuse to start if invalid, logging clear errors.
-- **Scope:** Export `validateConfig(config): { valid, errors }`. Validate `modelOrder` non-empty, `cooldownMinutes` 1-10080, `probeIntervalSec` >= 60, `whatsappMinRestartIntervalSec` >= 60, state dir writable.
-- **Definition of done:** `validateConfig` exported and tested; plugin refuses to start on bad config; README updated.
+- **Context:** Currently parseConfig() silently falls back to defaults for any invalid value. The plugin starts even if modelOrder is empty, paths are not writable, or cooldownMinutes is set to an absurd value.
+- **What to do:**
+  - Export `validateConfig(config): { valid, errors }` function
+  - Validate: modelOrder has at least one entry
+  - Validate: cooldownMinutes is between 1 and 10080 (1 week)
+  - Validate: probeIntervalSec >= 60
+  - Validate: whatsappMinRestartIntervalSec >= 60
+  - Validate: state file directory is writable (best-effort)
+  - Log each validation error with api.logger?.error
+  - Return early from register() if validation fails (fail-fast)
 - **Files:** `index.ts`, `test/index.test.ts`, `README.md`
+- **Definition of done:** validateConfig exported and tested; plugin refuses to start on bad config; README updated.
 - **GitHub Issue:** #10
 
 ### T-013 [medium] - Write status snapshot file on each monitor tick
 - **Goal:** Write `buildStatusSnapshot()` output to a JSON file on every tick for external polling.
-- **Scope:** Default path `~/.openclaw/workspace/memory/self-heal-status.json`, configurable via `statusFile`. Atomic write (`.tmp` + rename). Export `writeStatusFile(path, snapshot)` helper.
-- **Definition of done:** Status file written every tick; atomic write; tests cover helper; README documents config key.
+- **Context:** The plugin already builds a StatusSnapshot and emits it via api.emit, but external tools cannot read it without subscribing to the event bus.
+- **What to do:**
+  - After each tick, write buildStatusSnapshot(state, config) to a JSON file
+  - Default path: `~/.openclaw/workspace/memory/self-heal-status.json` (configurable via `statusFile`)
+  - Write atomically (write to .tmp then rename)
+  - Export `writeStatusFile(path, snapshot)` helper
+  - Add statusFile to PluginConfig type and parseConfig
 - **Files:** `index.ts`, `test/index.test.ts`, `README.md`
+- **Definition of done:** Status file written every tick; atomic write; tests cover helper; README documents config key.
 - **GitHub Issue:** #11
 
 ### T-014 [medium] - Export heal metrics to ~/.aahp/metrics.jsonl
 - **Goal:** Append one JSONL line per heal event to `~/.aahp/metrics.jsonl` for analysis and alerting.
-- **Scope:** Export `appendMetric(line, metricsFile)` helper. Write entries for: model-cooldown, session-patched, whatsapp-restart, cron-disabled, model-recovered. Configurable via `metricsFile`. Dry-run support.
-- **Definition of done:** Helper exported and tested; all 5 event types write metrics; README documents format.
+- **Context:** Heal events are currently only visible in logs and via api.emit(). There is no persistent record for analysis.
+- **What to do:**
+  - Export `appendMetric(line, metricsFile)` helper
+  - Write entries for: model-cooldown, session-patched, whatsapp-restart, cron-disabled, model-recovered
+  - Default metrics file: `~/.aahp/metrics.jsonl` (configurable via `metricsFile`)
+  - Skip or mark dry-run events
+  - Create parent directory if missing
 - **Files:** `index.ts`, `test/index.test.ts`, `README.md`
+- **Definition of done:** Helper exported and tested; all 5 event types write metrics; README documents format.
 - **GitHub Issue:** #12
 
 ---
@@ -62,8 +76,8 @@
 
 | Task  | Title | Date |
 |-------|-------|------|
+| T-011 | Add integration tests for monitor service tick flows | 2026-03-02 |
 | T-004 | Add TypeScript build pipeline and type-checking | 2026-03-01 |
 | T-010 | Expose self-heal status for external monitoring | 2026-02-28 |
 | T-009 | Emit structured observability events for heal actions | 2026-02-28 |
 | T-008 | Add dry-run mode for safe validation of healing logic | 2026-02-28 |
-| T-007 | Add active model recovery probing to shorten cooldown periods | 2026-02-28 |
