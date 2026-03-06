@@ -1,18 +1,27 @@
 import { describe, it, expect } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 
-// Smoke test: ensure the plugin module can be imported and exposes expected API surface
-// Adjust the import path to the real plugin entry when available
+// Smoke test: ensure the plugin module build artifact exists and can be imported.
+// This test is intentionally defensive so CI fails with a clear message if the plugin
+// hasn't been built yet.
+
+const buildPath = path.resolve(__dirname, '../../openclaw-self-healing-elvatis/dist/index.js');
 
 describe('openclaw-self-healing-elvatis - smoke', () => {
-  it('loads the plugin module without throwing', async () => {
+  it('has build artifact and can be imported', async () => {
+    // First ensure build artifact exists
+    const exists = fs.existsSync(buildPath);
+    expect(exists, `Build artifact missing: ${buildPath}`).toBe(true);
+
+    // If it exists, try to import it and ensure import doesn't throw
     let mod;
     try {
-      // lightweight require; use import if your build supports ESM for tests
-      mod = await import('../../plugins/openclaw-self-healing-elvatis/dist/index.js').catch(() => undefined);
+      mod = await import(buildPath).catch(() => undefined);
     } catch (e) {
       mod = undefined;
     }
-    // The test is intentionally permissive: it should only fail if import throws or is missing
-    expect(mod).toBeDefined();
+
+    expect(mod, 'Import of built plugin failed or returned undefined').toBeDefined();
   });
 });
